@@ -2,7 +2,7 @@
   "version": 2,
   "builds": [
     {
-      "src": "store_manager/wsgi.py",
+      "src": "store_manager/store_manager/wsgi.py",
       "use": "@vercel/python",
       "config": {
         "maxLambdaSize": "15mb"
@@ -20,7 +20,7 @@
     },
     {
       "src": "/(.*)",
-      "dest": "store_manager/wsgi.py"
+      "dest": "store_manager/store_manager/wsgi.py"
     }
   ]
 }
