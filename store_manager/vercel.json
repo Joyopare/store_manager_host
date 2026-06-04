@@ -5,7 +5,8 @@
       "src": "store_manager/store_manager/wsgi.py",
       "use": "@vercel/python",
       "config": {
-        "maxLambdaSize": "15mb"
+        "maxLambdaSize": "15mb",
+        "buildCommand": "cd store_manager && python manage.py collectstatic --noinput"
       }
     },
     {
