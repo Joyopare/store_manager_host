@@ -1,11 +1,26 @@
 {
-  "buildCommand": "pip install -r requirements.txt",
-  "outputDirectory": "",
-  "framework": null,
-  "rewrites": [
+  "version": 2,
+  "builds": [
     {
-      "source": "/(.*)",
-      "destination": "/store_manager/wsgi.py"
+      "src": "store_manager/wsgi.py",
+      "use": "@vercel/python",
+      "config": {
+        "maxLambdaSize": "15mb"
+      }
+    },
+    {
+      "src": "staticfiles/**",
+      "use": "@vercel/static"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/static/(.*)",
+      "dest": "/staticfiles/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "store_manager/wsgi.py"
     }
   ]
 }
