@@ -1,0 +1,170 @@
+{% extends 'store/base.html' %}
+{% block title %}Dashboard — StoreFlow{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+{% block topbar_actions %}
+  <a href="{% url 'pos' %}" class="btn btn-primary">🛒 New Sale</a>
+{% endblock %}
+
+{% block content %}
+<!-- Stats -->
+<div class="stats-grid">
+  <div class="stat-card blue">
+    <span class="stat-icon">📦</span>
+    <div class="stat-label">Total Products</div>
+    <div class="stat-value">{{ total_products }}</div>
+    <div class="stat-sub">{{ total_categories }} categories</div>
+  </div>
+  <div class="stat-card green">
+    <span class="stat-icon">💰</span>
+    <div class="stat-label">Today's Revenue</div>
+    <div class="stat-value">GH₵{{ today_revenue|floatformat:2 }}</div>
+    <div class="stat-sub">{{ today_orders }} orders today</div>
+  </div>
+  <div class="stat-card orange">
+    <span class="stat-icon">⚠️</span>
+    <div class="stat-label">Low Stock</div>
+    <div class="stat-value">{{ low_stock }}</div>
+    <div class="stat-sub">{{ out_of_stock }} out of stock</div>
+  </div>
+  <div class="stat-card red">
+    <span class="stat-icon">📈</span>
+    <div class="stat-label">Monthly Revenue</div>
+    <div class="stat-value">GH₵{{ monthly_revenue|floatformat:0 }}</div>
+    <div class="stat-sub">Stock value: GH₵{{ total_stock_value|floatformat:0 }}</div>
+  </div>
+</div>
+
+<div class="grid-2" style="margin-bottom:24px;">
+  <!-- Chart -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">Revenue — Last 7 Days</span>
+      <span style="font-size:12px;color:var(--text3);">Weekly: GH₵{{ weekly_revenue|floatformat:2 }}</span>
+    </div>
+    <div class="card-body">
+      <canvas id="revenueChart" height="160"></canvas>
+    </div>
+  </div>
+
+  <!-- Top Products -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">Top Selling Products</span>
+    </div>
+    <div class="card-body" style="padding:12px;">
+      {% for p in top_products %}
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 8px;border-bottom:1px solid var(--border);">
+        <div>
+          <div style="font-size:13px;font-weight:600;">{{ p.product_name }}</div>
+          <div style="font-size:11px;color:var(--text3);">{{ p.total_qty }} units sold</div>
+        </div>
+        <div style="font-size:13px;font-weight:700;color:var(--green);">GH₵{{ p.total_rev|floatformat:2 }}</div>
+      </div>
+      {% empty %}
+      <div class="empty-state" style="padding:30px;">
+        <div class="icon">📊</div>
+        <p>No sales data yet</p>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<div class="grid-2">
+  <!-- Recent Sales -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">Recent Sales</span>
+      <a href="{% url 'sale_list' %}" class="btn btn-ghost btn-sm">View All</a>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th>Invoice</th><th>Customer</th><th>Total</th><th>Payment</th>
+        </tr></thead>
+        <tbody>
+          {% for sale in recent_sales %}
+          <tr>
+            <td><a href="{% url 'sale_detail' sale.pk %}" class="mono" style="color:var(--accent);font-size:12px;">{{ sale.invoice_number }}</a></td>
+            <td style="font-size:13px;">{{ sale.customer_name|default:"Walk-in" }}</td>
+            <td style="font-weight:700;">GH₵{{ sale.total|floatformat:2 }}</td>
+            <td><span class="badge badge-blue">{{ sale.get_payment_method_display }}</span></td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="4" style="text-align:center;color:var(--text3);padding:30px;">No sales yet</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Low Stock Alert -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">⚠️ Low Stock Alert</span>
+      <a href="{% url 'product_list' %}?status=low" class="btn btn-ghost btn-sm">View All</a>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th>Product</th><th>Stock</th><th>Reorder</th><th></th>
+        </tr></thead>
+        <tbody>
+          {% for p in low_stock_products %}
+          <tr>
+            <td>
+              <div style="font-size:13px;font-weight:600;">{{ p.name }}</div>
+              <div style="font-size:11px;color:var(--text3);">{{ p.category.name|default:"—" }}</div>
+            </td>
+            <td>
+              <span class="{% if p.stock_quantity == 0 %}badge badge-red{% else %}badge badge-orange{% endif %}">
+                {{ p.stock_quantity }} {{ p.unit }}
+              </span>
+            </td>
+            <td style="font-size:12px;color:var(--text3);">{{ p.reorder_level }}</td>
+            <td><a href="{% url 'stock_adjust' p.pk %}" class="btn btn-ghost btn-sm">Restock</a></td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="4" style="text-align:center;color:var(--green);padding:30px;">✅ All stock levels are healthy!</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<script>
+const ctx = document.getElementById('revenueChart').getContext('2d');
+const labels = {{ chart_labels|safe }};
+const data = {{ chart_data|safe }};
+new Chart(ctx, {
+  type: 'bar',
+  data: {
+    labels,
+    datasets: [{
+      data,
+      backgroundColor: 'rgba(79,124,255,0.3)',
+      borderColor: '#4f7cff',
+      borderWidth: 2,
+      borderRadius: 6,
+      borderSkipped: false,
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false }, tooltip: {
+      backgroundColor: '#1c2030', borderColor: '#2a3050', borderWidth: 1,
+      titleColor: '#e8ecf4', bodyColor: '#8b95b0',
+      callbacks: { label: ctx => ' GH₵' + ctx.parsed.y.toFixed(2) }
+    }},
+    scales: {
+      x: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#5a6480', font: { size: 11 } } },
+      y: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#5a6480', font: { size: 11 }, callback: v => 'GH₵' + v } }
+    }
+  }
+});
+</script>
+{% endblock %}

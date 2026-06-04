@@ -1,0 +1,78 @@
+{% extends 'store/base.html' %}
+{% block title %}{{ title }} — StoreFlow{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+{% block topbar_actions %}
+  <a href="{% url 'product_list' %}" class="btn btn-ghost">← Back</a>
+{% endblock %}
+
+{% block content %}
+<div style="max-width:800px;">
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-header"><span class="card-title">Basic Information</span></div>
+        <div class="card-body">
+          <div class="form-group"><label class="form-label">Product Name *</label>{{ form.name }}</div>
+          <div class="form-group"><label class="form-label">Description</label>{{ form.description }}</div>
+          <div class="grid-2">
+            <div class="form-group"><label class="form-label">Category</label>{{ form.category }}</div>
+            <div class="form-group"><label class="form-label">Supplier</label>{{ form.supplier }}</div>
+          </div>
+          <div class="grid-2">
+            <div class="form-group"><label class="form-label">SKU *</label>{{ form.sku }}</div>
+            <div class="form-group"><label class="form-label">Barcode</label>{{ form.barcode }}</div>
+          </div>
+          <div class="form-group"><label class="form-label">Unit</label>{{ form.unit }}</div>
+        </div>
+      </div>
+
+      <div>
+        <div class="card" style="margin-bottom:16px;">
+          <div class="card-header"><span class="card-title">Pricing & Stock</span></div>
+          <div class="card-body">
+            <div class="grid-2">
+              <div class="form-group"><label class="form-label">Cost Price (GH₵)</label>{{ form.cost_price }}</div>
+              <div class="form-group"><label class="form-label">Selling Price (GH₵)</label>{{ form.selling_price }}</div>
+            </div>
+            <div class="grid-2">
+              <div class="form-group"><label class="form-label">Stock Quantity</label>{{ form.stock_quantity }}</div>
+              <div class="form-group"><label class="form-label">Reorder Level</label>{{ form.reorder_level }}</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-bottom:16px;">
+          <div class="card-header"><span class="card-title">Product Image</span></div>
+          <div class="card-body">
+            {% if product.image %}
+              <img src="{{ product.image.url }}" style="width:100%;height:120px;object-fit:cover;border-radius:8px;margin-bottom:12px;">
+            {% endif %}
+            <div class="form-group">{{ form.image }}</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-body">
+            <div style="display:flex;align-items:center;gap:10px;">
+              {{ form.is_active }}
+              <label style="font-size:14px;font-weight:600;">Product is Active</label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {% if form.errors %}
+      <div class="alert alert-error" style="margin-top:16px;">
+        ⚠️ Please fix the errors below: {{ form.errors }}
+      </div>
+    {% endif %}
+
+    <div style="display:flex;gap:8px;margin-top:20px;">
+      <button type="submit" class="btn btn-primary">💾 Save Product</button>
+      <a href="{% url 'product_list' %}" class="btn btn-ghost">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

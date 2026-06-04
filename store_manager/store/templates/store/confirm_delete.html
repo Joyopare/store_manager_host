@@ -1,0 +1,23 @@
+{% extends 'store/base.html' %}
+{% block title %}Delete {{ type }} — StoreFlow{% endblock %}
+{% block page_title %}Delete {{ type }}{% endblock %}
+{% block topbar_actions %}<a href="javascript:history.back()" class="btn btn-ghost">← Back</a>{% endblock %}
+
+{% block content %}
+<div style="max-width:440px;">
+  <div class="card">
+    <div class="card-body" style="text-align:center;padding:40px;">
+      <div style="font-size:48px;margin-bottom:16px;">⚠️</div>
+      <h3 style="font-size:18px;font-weight:700;margin-bottom:8px;">Delete {{ type }}</h3>
+      <p style="color:var(--text3);font-size:14px;margin-bottom:24px;">
+        Are you sure you want to delete <strong>{{ object }}</strong>? This action cannot be undone.
+      </p>
+      <form method="post" style="display:flex;gap:8px;justify-content:center;">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Yes, Delete</button>
+        <a href="javascript:history.back()" class="btn btn-ghost">Cancel</a>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

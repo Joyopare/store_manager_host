@@ -1,0 +1,25 @@
+{% extends 'store/base.html' %}
+{% block title %}{{ title }} — StoreFlow{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+{% block topbar_actions %}<a href="{% url 'category_list' %}" class="btn btn-ghost">← Back</a>{% endblock %}
+
+{% block content %}
+<div style="max-width:480px;">
+  <div class="card">
+    <div class="card-header"><span class="card-title">{{ title }}</span></div>
+    <div class="card-body">
+      <form method="post">
+        {% csrf_token %}
+        <div class="form-group"><label class="form-label">Name *</label>{{ form.name }}</div>
+        <div class="form-group"><label class="form-label">Slug *</label>{{ form.slug }}</div>
+        <div class="form-group"><label class="form-label">Icon (emoji)</label>{{ form.icon }}</div>
+        <div class="form-group"><label class="form-label">Description</label>{{ form.description }}</div>
+        <div style="display:flex;gap:8px;">
+          <button type="submit" class="btn btn-primary">💾 Save</button>
+          <a href="{% url 'category_list' %}" class="btn btn-ghost">Cancel</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

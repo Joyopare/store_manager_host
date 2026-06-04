@@ -1,0 +1,97 @@
+{% extends 'store/base.html' %}
+{% block title %}Products — StoreFlow{% endblock %}
+{% block page_title %}Products{% endblock %}
+{% block topbar_actions %}
+  <a href="{% url 'product_create' %}" class="btn btn-primary">+ Add Product</a>
+{% endblock %}
+
+{% block content %}
+<div class="search-bar">
+  <form method="get" style="display:flex;gap:8px;width:100%;">
+    <div class="search-input-wrap" style="flex:2;">
+      <span class="search-icon">🔍</span>
+      {{ form.query }}
+    </div>
+    <div style="flex:1;">{{ form.category }}</div>
+    <button type="submit" class="btn btn-ghost">Filter</button>
+    <a href="{% url 'product_list' %}" class="btn btn-ghost">Reset</a>
+  </form>
+</div>
+
+<!-- Status filters -->
+<div style="display:flex;gap:8px;margin-bottom:16px;">
+  <a href="{% url 'product_list' %}" class="badge {% if not status_filter %}badge-blue{% else %}badge-gray{% endif %}" style="padding:5px 12px;cursor:pointer;">All</a>
+  <a href="?status=low" class="badge {% if status_filter == 'low' %}badge-orange{% else %}badge-gray{% endif %}" style="padding:5px 12px;cursor:pointer;">⚠️ Low Stock</a>
+  <a href="?status=out" class="badge {% if status_filter == 'out' %}badge-red{% else %}badge-gray{% endif %}" style="padding:5px 12px;cursor:pointer;">❌ Out of Stock</a>
+</div>
+
+<div class="card">
+  <div class="table-wrap">
+    <table>
+      <thead><tr>
+        <th>Product</th><th>SKU</th><th>Category</th>
+        <th>Cost</th><th>Price</th><th>Margin</th>
+        <th>Stock</th><th>Status</th><th>Actions</th>
+      </tr></thead>
+      <tbody>
+        {% for p in products %}
+        <tr>
+          <td>
+            <div style="display:flex;align-items:center;gap:10px;">
+              <div style="width:36px;height:36px;border-radius:8px;background:var(--surface3);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;">
+                {% if p.image %}<img src="{{ p.image.url }}" style="width:100%;height:100%;object-fit:cover;border-radius:8px;">{% else %}📦{% endif %}
+              </div>
+              <div>
+                <a href="{% url 'product_detail' p.pk %}" style="font-weight:600;font-size:13.5px;color:var(--text);">{{ p.name }}</a>
+                <div style="font-size:11px;color:var(--text3);">{{ p.supplier.name|default:"—" }}</div>
+              </div>
+            </div>
+          </td>
+          <td><span class="mono" style="font-size:12px;color:var(--text2);">{{ p.sku }}</span></td>
+          <td>{% if p.category %}<span class="badge badge-blue">{{ p.category.icon }} {{ p.category.name }}</span>{% else %}—{% endif %}</td>
+          <td style="font-size:13px;">GH₵{{ p.cost_price }}</td>
+          <td style="font-weight:700;">GH₵{{ p.selling_price }}</td>
+          <td>
+            <span style="font-size:12px;font-weight:600;color:{% if p.profit_margin > 20 %}var(--green){% elif p.profit_margin > 10 %}var(--yellow){% else %}var(--red){% endif %};">
+              {{ p.profit_margin }}%
+            </span>
+          </td>
+          <td>
+            <span class="stock-dot {% if p.stock_quantity == 0 %}out{% elif p.is_low_stock %}low{% else %}ok{% endif %}"></span>
+            <strong>{{ p.stock_quantity }}</strong> {{ p.unit }}
+          </td>
+          <td>
+            {% if not p.is_active %}<span class="badge badge-gray">Inactive</span>
+            {% elif p.stock_quantity == 0 %}<span class="badge badge-red">Out</span>
+            {% elif p.is_low_stock %}<span class="badge badge-orange">Low</span>
+            {% else %}<span class="badge badge-green">OK</span>{% endif %}
+          </td>
+          <td>
+            <div style="display:flex;gap:4px;">
+              <a href="{% url 'product_detail' p.pk %}" class="btn btn-ghost btn-sm">👁</a>
+              <a href="{% url 'product_edit' p.pk %}" class="btn btn-ghost btn-sm">✏️</a>
+              <a href="{% url 'stock_adjust' p.pk %}" class="btn btn-ghost btn-sm">📦</a>
+              <a href="{% url 'product_delete' p.pk %}" class="btn btn-ghost btn-sm" style="color:var(--red);">🗑</a>
+            </div>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="9">
+          <div class="empty-state"><div class="icon">📦</div><h3>No products found</h3><p>Add your first product to get started.</p></div>
+        </td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% if products.has_other_pages %}
+<div class="pagination">
+  {% if products.has_previous %}<a href="?page={{ products.previous_page_number }}" class="page-link">←</a>{% endif %}
+  {% for n in products.paginator.page_range %}
+    <a href="?page={{ n }}" class="page-link {% if n == products.number %}active{% endif %}">{{ n }}</a>
+  {% endfor %}
+  {% if products.has_next %}<a href="?page={{ products.next_page_number }}" class="page-link">→</a>{% endif %}
+</div>
+{% endif %}
+{% endblock %}

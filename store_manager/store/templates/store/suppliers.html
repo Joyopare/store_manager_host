@@ -1,0 +1,33 @@
+{% extends 'store/base.html' %}
+{% block title %}Suppliers — StoreFlow{% endblock %}
+{% block page_title %}Suppliers{% endblock %}
+{% block topbar_actions %}<a href="{% url 'supplier_create' %}" class="btn btn-primary">+ Add Supplier</a>{% endblock %}
+
+{% block content %}
+<div class="card">
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Name</th><th>Contact</th><th>Phone</th><th>Email</th><th>Products</th><th>Actions</th></tr></thead>
+      <tbody>
+        {% for s in suppliers %}
+        <tr>
+          <td style="font-weight:600;">{{ s.name }}</td>
+          <td style="color:var(--text3);">{{ s.contact_person|default:"—" }}</td>
+          <td style="font-family:monospace;font-size:13px;">{{ s.phone|default:"—" }}</td>
+          <td style="font-size:13px;color:var(--accent);">{{ s.email|default:"—" }}</td>
+          <td><span class="badge badge-blue">{{ s.product_count }} products</span></td>
+          <td>
+            <div style="display:flex;gap:4px;">
+              <a href="{% url 'supplier_edit' s.pk %}" class="btn btn-ghost btn-sm">✏️ Edit</a>
+              <a href="{% url 'supplier_delete' s.pk %}" class="btn btn-ghost btn-sm" style="color:var(--red);">🗑</a>
+            </div>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6"><div class="empty-state"><div class="icon">🚚</div><h3>No suppliers yet</h3></div></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

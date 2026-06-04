@@ -1,0 +1,14 @@
+altgraph==0.17.5
+asgiref==3.11.1
+Django==4.2.30
+packaging==26.2
+pefile==2024.8.26
+pillow==12.2.0
+psycopg2-binary==2.9.12
+pyinstaller==6.20.0
+pyinstaller-hooks-contrib==2026.5
+python-decouple==3.8
+pywin32-ctypes==0.2.3
+setuptools==82.0.1
+sqlparse==0.5.5
+tzdata==2026.2

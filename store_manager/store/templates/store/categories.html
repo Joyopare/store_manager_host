@@ -1,0 +1,31 @@
+{% extends 'store/base.html' %}
+{% block title %}Categories — StoreFlow{% endblock %}
+{% block page_title %}Categories{% endblock %}
+{% block topbar_actions %}
+  <a href="{% url 'category_create' %}" class="btn btn-primary">+ Add Category</a>
+{% endblock %}
+
+{% block content %}
+<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px;">
+  {% for cat in categories %}
+  <div class="card">
+    <div class="card-body" style="text-align:center;padding:24px 16px;">
+      <div style="font-size:40px;margin-bottom:10px;">{{ cat.icon }}</div>
+      <div style="font-size:15px;font-weight:700;margin-bottom:4px;">{{ cat.name }}</div>
+      <div style="font-size:12px;color:var(--text3);margin-bottom:12px;">{{ cat.product_count }} product{{ cat.product_count|pluralize }}</div>
+      {% if cat.description %}<div style="font-size:12px;color:var(--text3);margin-bottom:12px;">{{ cat.description|truncatechars:60 }}</div>{% endif %}
+      <div style="display:flex;gap:6px;justify-content:center;">
+        <a href="{% url 'category_edit' cat.pk %}" class="btn btn-ghost btn-sm">✏️ Edit</a>
+        <a href="{% url 'category_delete' cat.pk %}" class="btn btn-ghost btn-sm" style="color:var(--red);">🗑</a>
+      </div>
+    </div>
+  </div>
+  {% empty %}
+  <div class="empty-state" style="grid-column:1/-1;">
+    <div class="icon">🏷️</div>
+    <h3>No categories yet</h3>
+    <p>Create your first category to organize products.</p>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}

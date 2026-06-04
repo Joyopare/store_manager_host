@@ -1,0 +1,55 @@
+{% extends 'store/base.html' %}
+{% block title %}{{ sale.invoice_number }} — StoreFlow{% endblock %}
+{% block page_title %}Sale Receipt{% endblock %}
+{% block topbar_actions %}
+  <a href="{% url 'print_receipt' sale.pk %}?autoprint=1" target="_blank" class="btn btn-primary">🖨️ Print Receipt</a>
+  <a href="{% url 'print_receipt' sale.pk %}" target="_blank" class="btn btn-ghost">👁 Preview</a>
+  <a href="{% url 'sale_list' %}" class="btn btn-ghost">← Back</a>
+{% endblock %}
+
+{% block content %}
+<div style="max-width:600px;">
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title mono">{{ sale.invoice_number }}</span>
+      <span class="badge badge-green">{{ sale.get_payment_method_display }}</span>
+    </div>
+    <div class="card-body">
+      <div class="grid-2" style="margin-bottom:20px;gap:12px;">
+        <div><div style="font-size:11px;color:var(--text3);">Date</div><div style="font-weight:600;">{{ sale.created_at|date:"M d, Y H:i" }}</div></div>
+        <div><div style="font-size:11px;color:var(--text3);">Customer</div><div style="font-weight:600;">{{ sale.customer_name|default:"Walk-in" }}</div></div>
+        <div><div style="font-size:11px;color:var(--text3);">Cashier</div><div style="font-weight:600;">{{ sale.cashier.username|default:"—" }}</div></div>
+        {% if sale.notes %}<div><div style="font-size:11px;color:var(--text3);">Notes</div><div style="font-weight:600;">{{ sale.notes }}</div></div>{% endif %}
+      </div>
+
+      <table style="margin-bottom:16px;">
+        <thead><tr><th>Product</th><th>Qty</th><th>Unit Price</th><th>Total</th></tr></thead>
+        <tbody>
+          {% for item in sale.items.all %}
+          <tr>
+            <td style="font-weight:600;">{{ item.product_name }}</td>
+            <td>{{ item.quantity }}</td>
+            <td>GH₵{{ item.unit_price }}</td>
+            <td style="font-weight:700;color:var(--green);">GH₵{{ item.total_price }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+      <div style="border-top:1px solid var(--border);padding-top:14px;">
+        <div style="display:flex;justify-content:space-between;margin-bottom:6px;font-size:13px;color:var(--text2);">
+          <span>Subtotal</span><span>GH₵{{ sale.subtotal }}</span>
+        </div>
+        {% if sale.discount %}
+        <div style="display:flex;justify-content:space-between;margin-bottom:6px;font-size:13px;color:var(--orange);">
+          <span>Discount</span><span>-GH₵{{ sale.discount }}</span>
+        </div>
+        {% endif %}
+        <div style="display:flex;justify-content:space-between;font-size:18px;font-weight:800;color:var(--green);">
+          <span>Total</span><span>GH₵{{ sale.total }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

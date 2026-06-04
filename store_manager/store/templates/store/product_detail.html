@@ -1,0 +1,94 @@
+{% extends 'store/base.html' %}
+{% block title %}{{ product.name }} — StoreFlow{% endblock %}
+{% block page_title %}Product Detail{% endblock %}
+{% block topbar_actions %}
+  <a href="{% url 'stock_adjust' product.pk %}" class="btn btn-ghost">📦 Adjust Stock</a>
+  <a href="{% url 'product_edit' product.pk %}" class="btn btn-primary">✏️ Edit</a>
+  <a href="{% url 'product_list' %}" class="btn btn-ghost">← Back</a>
+{% endblock %}
+
+{% block content %}
+<div class="grid-2" style="margin-bottom:24px;">
+  <div class="card">
+    <div class="card-body">
+      <div style="display:flex;gap:20px;align-items:flex-start;">
+        <div style="width:80px;height:80px;border-radius:12px;background:var(--surface3);display:flex;align-items:center;justify-content:center;font-size:36px;flex-shrink:0;">
+          {% if product.image %}<img src="{{ product.image.url }}" style="width:100%;height:100%;object-fit:cover;border-radius:12px;">{% else %}📦{% endif %}
+        </div>
+        <div>
+          <h2 style="font-size:20px;font-weight:800;margin-bottom:4px;">{{ product.name }}</h2>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;">
+            {% if product.category %}<span class="badge badge-blue">{{ product.category.icon }} {{ product.category.name }}</span>{% endif %}
+            {% if product.is_active %}<span class="badge badge-green">Active</span>{% else %}<span class="badge badge-gray">Inactive</span>{% endif %}
+            {% if product.is_out_of_stock %}<span class="badge badge-red">Out of Stock</span>
+            {% elif product.is_low_stock %}<span class="badge badge-orange">Low Stock</span>
+            {% else %}<span class="badge badge-green">In Stock</span>{% endif %}
+          </div>
+          <div style="font-size:13px;color:var(--text3);">{{ product.description|default:"No description." }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-body">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+        <div style="background:var(--surface2);border-radius:8px;padding:14px;">
+          <div style="font-size:11px;color:var(--text3);margin-bottom:4px;">SKU</div>
+          <div class="mono" style="font-weight:600;">{{ product.sku }}</div>
+        </div>
+        <div style="background:var(--surface2);border-radius:8px;padding:14px;">
+          <div style="font-size:11px;color:var(--text3);margin-bottom:4px;">Cost Price</div>
+          <div style="font-weight:700;">GH₵{{ product.cost_price }}</div>
+        </div>
+        <div style="background:var(--surface2);border-radius:8px;padding:14px;">
+          <div style="font-size:11px;color:var(--text3);margin-bottom:4px;">Selling Price</div>
+          <div style="font-weight:700;color:var(--green);">GH₵{{ product.selling_price }}</div>
+        </div>
+        <div style="background:var(--surface2);border-radius:8px;padding:14px;">
+          <div style="font-size:11px;color:var(--text3);margin-bottom:4px;">Profit Margin</div>
+          <div style="font-weight:700;color:var(--accent);">{{ product.profit_margin }}%</div>
+        </div>
+        <div style="background:var(--surface2);border-radius:8px;padding:14px;">
+          <div style="font-size:11px;color:var(--text3);margin-bottom:4px;">Stock</div>
+          <div style="font-weight:700;font-size:18px;">{{ product.stock_quantity }} <span style="font-size:12px;font-weight:400;color:var(--text3);">{{ product.unit }}</span></div>
+        </div>
+        <div style="background:var(--surface2);border-radius:8px;padding:14px;">
+          <div style="font-size:11px;color:var(--text3);margin-bottom:4px;">Stock Value</div>
+          <div style="font-weight:700;">GH₵{{ product.stock_value|floatformat:2 }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header"><span class="card-title">Stock Movement History</span></div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr>
+        <th>Date</th><th>Type</th><th>Qty</th><th>Before</th><th>After</th><th>Reason</th><th>By</th>
+      </tr></thead>
+      <tbody>
+        {% for m in movements %}
+        <tr>
+          <td style="font-size:12px;color:var(--text3);">{{ m.created_at|date:"M d, Y H:i" }}</td>
+          <td>
+            {% if m.movement_type == 'in' %}<span class="badge badge-green">↑ In</span>
+            {% elif m.movement_type == 'out' %}<span class="badge badge-red">↓ Out</span>
+            {% else %}<span class="badge badge-blue">⚙ Adj</span>{% endif %}
+          </td>
+          <td style="font-weight:700;">{{ m.quantity }}</td>
+          <td style="font-size:12px;color:var(--text3);">{{ m.previous_quantity }}</td>
+          <td style="font-weight:600;">{{ m.new_quantity }}</td>
+          <td style="font-size:12px;color:var(--text3);">{{ m.reason|default:"—" }}</td>
+          <td style="font-size:12px;">{{ m.performed_by.username|default:"—" }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="7" style="text-align:center;color:var(--text3);padding:24px;">No movement history.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

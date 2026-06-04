@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Receipt {{ sale.invoice_number }}</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    font-family: 'Courier New', Courier, monospace;
+    background: #f0f0f0;
+    display: flex;
+    justify-content: center;
+    padding: 30px 16px;
+  }
+
+  .receipt {
+    background: #fff;
+    width: 320px;
+    padding: 28px 24px 32px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.15);
+    border-radius: 4px;
+    position: relative;
+  }
+
+  /* Torn top edge */
+  .receipt::before {
+    content: '';
+    position: absolute;
+    top: -10px; left: 0; right: 0;
+    height: 12px;
+    background: radial-gradient(circle at 8px -2px, #f0f0f0 6px, #fff 6px);
+    background-size: 16px 12px;
+    background-repeat: repeat-x;
+  }
+  /* Torn bottom edge */
+  .receipt::after {
+    content: '';
+    position: absolute;
+    bottom: -10px; left: 0; right: 0;
+    height: 12px;
+    background: radial-gradient(circle at 8px 14px, #f0f0f0 6px, #fff 6px);
+    background-size: 16px 12px;
+    background-repeat: repeat-x;
+  }
+
+  .store-header { text-align: center; margin-bottom: 18px; }
+  .store-logo { font-size: 26px; margin-bottom: 4px; }
+  .store-name { font-size: 18px; font-weight: 900; letter-spacing: 2px; text-transform: uppercase; font-family: Arial, sans-serif; }
+  .store-tagline { font-size: 10px; color: #666; margin-top: 2px; letter-spacing: 1px; }
+  .store-contact { font-size: 10px; color: #555; margin-top: 6px; line-height: 1.6; }
+
+  .divider { border: none; border-top: 1px dashed #aaa; margin: 14px 0; }
+  .divider-solid { border: none; border-top: 1px solid #333; margin: 14px 0; }
+
+  .receipt-title { text-align: center; font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: #444; margin-bottom: 12px; font-family: Arial, sans-serif; }
+
+  .meta-row { display: flex; justify-content: space-between; font-size: 10.5px; margin-bottom: 5px; color: #333; }
+  .meta-row .label { color: #666; }
+  .meta-row .value { font-weight: bold; text-align: right; max-width: 180px; word-break: break-all; }
+
+  .items-header { display: flex; font-size: 10px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; color: #555; padding-bottom: 6px; border-bottom: 1px dashed #aaa; margin-bottom: 8px; font-family: Arial, sans-serif; }
+  .items-header .col-item { flex: 1; }
+  .items-header .col-qty { width: 30px; text-align: center; }
+  .items-header .col-price { width: 55px; text-align: right; }
+  .items-header .col-total { width: 60px; text-align: right; }
+
+  .item-row { display: flex; align-items: flex-start; margin-bottom: 7px; font-size: 11px; }
+  .item-row .col-item { flex: 1; line-height: 1.4; }
+  .item-row .col-item .item-name { font-weight: bold; color: #111; }
+  .item-row .col-item .item-sub { font-size: 9.5px; color: #777; }
+  .item-row .col-qty { width: 30px; text-align: center; color: #444; padding-top: 1px; }
+  .item-row .col-price { width: 55px; text-align: right; color: #555; padding-top: 1px; }
+  .item-row .col-total { width: 60px; text-align: right; font-weight: bold; color: #111; padding-top: 1px; }
+
+  .totals { margin-top: 4px; }
+  .total-row { display: flex; justify-content: space-between; font-size: 11px; padding: 3px 0; color: #333; }
+  .total-row.discount { color: #c0392b; }
+  .total-row.grand { font-size: 16px; font-weight: 900; color: #111; font-family: Arial, sans-serif; padding-top: 8px; }
+  .total-row.grand span:last-child { font-size: 18px; }
+
+  .payment-badge {
+    display: inline-block; margin-top: 10px; padding: 4px 14px;
+    background: #111; color: #fff; font-size: 10px; font-weight: bold;
+    letter-spacing: 1.5px; text-transform: uppercase; border-radius: 20px;
+    font-family: Arial, sans-serif;
+  }
+
+  .footer { text-align: center; margin-top: 20px; }
+  .footer .thank-you { font-size: 13px; font-weight: bold; font-family: Arial, sans-serif; margin-bottom: 4px; }
+  .footer .footer-note { font-size: 10px; color: #777; line-height: 1.6; }
+
+  .barcode-area { text-align: center; margin-top: 16px; }
+  .barcode-text { font-size: 9px; letter-spacing: 3px; color: #999; font-family: Arial, sans-serif; margin-top: 4px; }
+
+  /* Print styles */
+  @media print {
+    body { background: white; padding: 0; }
+    .receipt { box-shadow: none; border-radius: 0; }
+    .receipt::before, .receipt::after { display: none; }
+    .no-print { display: none !important; }
+    @page { margin: 0; size: 80mm auto; }
+  }
+
+  /* Print controls */
+  .print-controls {
+    width: 320px;
+    margin: 0 auto 20px;
+    display: flex; gap: 8px;
+  }
+  .btn-print {
+    flex: 1; padding: 11px; border: none; border-radius: 8px;
+    font-size: 14px; font-weight: 700; cursor: pointer;
+    font-family: Arial, sans-serif; display: flex; align-items: center;
+    justify-content: center; gap: 6px;
+  }
+  .btn-print-primary { background: #111; color: #fff; }
+  .btn-print-primary:hover { background: #333; }
+  .btn-print-secondary { background: #e0e0e0; color: #333; }
+  .btn-print-secondary:hover { background: #ccc; }
+</style>
+</head>
+<body>
+
+<!-- Controls (hidden when printing) -->
+<div class="print-controls no-print">
+  <button class="btn-print btn-print-primary" onclick="window.print()">🖨️ Print Receipt</button>
+  <button class="btn-print btn-print-secondary" onclick="window.close()">✕ Close</button>
+</div>
+
+<div class="receipt">
+
+  <!-- Store Header -->
+  <div class="store-header">
+    <div class="store-logo">🏪</div>
+    <div class="store-name">StoreFlow</div>
+    <div class="store-tagline">Your Trusted Store</div>
+    <div class="store-contact">
+      📍 Accra, Ghana<br>
+      📞 +233 20 000 0000
+    </div>
+  </div>
+
+  <hr class="divider-solid">
+  <div class="receipt-title">Sales Receipt</div>
+
+  <!-- Meta -->
+  <div class="meta-row"><span class="label">Invoice</span><span class="value">{{ sale.invoice_number }}</span></div>
+  <div class="meta-row"><span class="label">Date</span><span class="value">{{ sale.created_at|date:"d/m/Y H:i" }}</span></div>
+  <div class="meta-row"><span class="label">Customer</span><span class="value">{{ sale.customer_name|default:"Walk-in Customer" }}</span></div>
+  <div class="meta-row"><span class="label">Cashier</span><span class="value">{{ sale.cashier.get_full_name|default:sale.cashier.username }}</span></div>
+
+  <hr class="divider">
+
+  <!-- Items Header -->
+  <div class="items-header">
+    <span class="col-item">Item</span>
+    <span class="col-qty">Qty</span>
+    <span class="col-price">Price</span>
+    <span class="col-total">Total</span>
+  </div>
+
+  <!-- Items -->
+  {% for item in sale.items.all %}
+  <div class="item-row">
+    <div class="col-item">
+      <div class="item-name">{{ item.product_name }}</div>
+      <div class="item-sub">@ GH₵{{ item.unit_price }} each</div>
+    </div>
+    <div class="col-qty">{{ item.quantity }}</div>
+    <div class="col-price">{{ item.unit_price }}</div>
+    <div class="col-total">{{ item.total_price }}</div>
+  </div>
+  {% endfor %}
+
+  <hr class="divider">
+
+  <!-- Totals -->
+  <div class="totals">
+    <div class="total-row">
+      <span>Subtotal</span>
+      <span>GH₵{{ sale.subtotal }}</span>
+    </div>
+    {% if sale.discount and sale.discount > 0 %}
+    <div class="total-row discount">
+      <span>Discount</span>
+      <span>-GH₵{{ sale.discount }}</span>
+    </div>
+    {% endif %}
+    <hr class="divider-solid">
+    <div class="total-row grand">
+      <span>TOTAL</span>
+      <span>GH₵{{ sale.total }}</span>
+    </div>
+  </div>
+
+  <!-- Payment Method -->
+  <div style="text-align:center;">
+    <span class="payment-badge">{{ sale.get_payment_method_display }}</span>
+  </div>
+
+  {% if sale.notes %}
+  <hr class="divider">
+  <div style="font-size:10px;color:#555;text-align:center;font-style:italic;">Note: {{ sale.notes }}</div>
+  {% endif %}
+
+  <hr class="divider">
+
+  <!-- Footer -->
+  <div class="footer">
+    <div class="thank-you">Thank You! 🙏</div>
+    <div class="footer-note">
+      Please keep this receipt<br>
+      for future reference.<br>
+      <br>
+      Goods once sold are<br>
+      not returnable without receipt.
+    </div>
+  </div>
+
+  <!-- Barcode-style invoice number -->
+  <div class="barcode-area">
+    <div class="barcode-text">{{ sale.invoice_number }}</div>
+  </div>
+
+</div>
+
+{% if autoprint %}
+<script>
+  window.addEventListener('load', () => {
+    setTimeout(() => window.print(), 400);
+  });
+</script>
+{% endif %}
+
+</body>
+</html>

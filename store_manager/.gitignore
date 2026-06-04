@@ -1,0 +1,11 @@
+# Ignore the .env file
+.env
+
+db.sqlite3
+
+storeflow.spec
+
+run.py
+
+BUILD_EXE.txt
+
